@@ -1,0 +1,70 @@
+function [imLinks] =  ImageGoogle(imgdb, word )
+
+%imgdb = 'C:\users\neha\builtdb\';
+
+urlPre = 'http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=';
+
+urlSuf = '&rsz=8';
+
+newWord = strrep(word , ' ' , '%20');
+
+url = strcat(urlPre,newWord,urlSuf);
+
+try
+
+response = urlread(url);
+
+catch
+    display('Could not get Image Links!');
+    error('Could not get Image Links!');   
+end
+
+
+pattern = '"url":"';
+
+%k = strfind(response, pattern);
+
+tokens = regexp(response,pattern, 'split');
+
+noTokens = length(tokens);
+
+imLinks = {};
+
+for i = 2:noTokens
+    
+newStr = tokens{i};
+
+k = strfind(newStr, '"');
+
+imLink = newStr(1:k(1)-1);
+
+imLinks{end + 1} = imLink;
+
+end
+
+noImg = length(imLinks);
+
+wordDir = strcat(imgdb,word);
+
+if (exist(wordDir) == 7)
+    
+    %Directory Exists
+else
+    mkdir(imgdb,word);    
+end
+
+
+for j=1:noImg
+try   
+    Img = imread(imLinks{j});
+
+catch
+    display('Could not retreive image from link');
+end
+
+finPath = strcat(wordDir , '\' , int2str(j), '.jpg');   
+
+imwrite(Img, finPath);
+
+end
+
